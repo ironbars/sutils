@@ -15,7 +15,7 @@ build_functions() {
   local include
   local include_re
 
-  if perl -lne '/[\W][*][\W]/ and exit 0 or exit 1' <<< "${includestr}"; then
+  if [[ "${includestr}" == *"*"* ]]; then
     include=($(_list_functions))
   else
     IFS=", " read -a include <<< "${includestr}"
