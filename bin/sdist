@@ -1,0 +1,150 @@
+#!/usr/bin/bash
+
+SUTILS_UTILS_DIR="$(cd "$(dirname "$0")"/../lib/sutils &> /dev/null && pwd)"
+readonly SUTILS_UTILS_DIR
+readonly SUTILS_SCRIPT="${BASH_SOURCE[0]##*/}"
+readonly SDIST_BUILD_LIB="${SUTILS_BUILD_LIB:-${SUTILS_UTILS_DIR}/sdist.sh}"
+readonly SDIST_BIN_DIR="${SUTILS_BIN_DIR:-${HOME}/.local/bin}"
+readonly SDIST_LIB_DIR="${SUTILS_LIB_DIR:-${HOME}/.local/lib}"
+readonly SDIST_UTILS_LIB="${SUTILS_UTILS_LIB:-${SDIST_LIB_DIR}/utils.sh}"
+readonly SDIST_INCLUDE_PATTERN="^#[[:space:]]*%include[[:space:]]+(.*)"
+readonly SDIST_TMPFILES=(
+  "$(mktemp full.XXXXX)"
+  "$(mktemp constants.XXXXX)"
+  "$(mktemp functions.XXXXX)"
+  "$(mktemp main.XXXXX)"
+)
+
+source "${SUTILS_UTILS_DIR}/sutils.sh"
+source "${SDIST_BUILD_LIB}"
+
+
+usage() {
+  out
+  out "Usage: ${SUTILS_SCRIPT} [-d DIR] [-i INCLUDES] [-f] [-s] [-h] SCRIPT"
+  out
+  out "  -d, --dest-dir       Destination directory for the prepared script"
+  out "                       (default \$HOME)"
+  out "  -i, --include        Comma-separated list of function names to include"
+  out "  -f, --list-functions Print list of valid function names and exit"
+  out "  -s, --list-scripts   Print list of valid script names and exit"
+  out "  -h, --help           Print this message and exit"
+  out
+}
+
+
+_list_functions() {
+  perl -lne 'print $1 if /^([[:lower:]_]+)/' "${SDIST_UTILS_LIB}"
+}
+
+
+_list_scripts() {
+  for script in "${SDIST_BIN_DIR}"/*; do
+    if [[ -x "${script}" ]]; then
+      out "${script##*/}"
+    fi
+  done
+}
+
+
+finish() {
+  rm -f "${SDIST_TMPFILES[@]}"
+}
+
+
+main() {
+  local dest_dir="${HOME}"
+  local include
+  local explicit_include=0
+  local positional=()
+  local script_name
+  local src_script
+  local dest_script
+  local funcs_in=()
+  local tmp_script="${SDIST_TMPFILES[0]}"
+  local tmp_constants="${SDIST_TMPFILES[1]}"
+  local tmp_functions="${SDIST_TMPFILES[2]}"
+  local tmp_main="${SDIST_TMPFILES[3]}"
+
+
+  while (( $# > 0 )); do
+    case "$1" in
+      -d|--dest-dir)
+        assert_arg_nonempty "$1" "$2"
+        dest_dir="$2"
+        shift 2
+        ;;
+      -i|--include)
+        assert_arg_nonempty "$1" "$2"
+        include="$2"
+        explicit_include=1
+        shift 2
+        ;;
+      -f|--list-functions)
+        _list_functions
+        exit
+        ;;
+      -s|--list-scripts)
+        _list_scripts
+        exit
+        ;;
+      -h|--help)
+        usage
+        exit
+        ;;
+      -?*)
+        warn "Unknown option '$1' provided; ignoring"
+        shift
+        ;;
+      *)
+        positional+=("$1")
+        shift
+        ;;
+    esac
+  done
+
+  set -- "${positional[@]}"
+
+  if [[ -z "$1" ]]; then
+    die "No script name provided"
+  fi
+
+  if [[ ! -d "${dest_dir}" ]]; then
+    die "Provided destination directory '${dest_dir}' doesn't exist"
+  fi
+
+  if [[ "${dest_dir}" == "${SDIST_BIN_DIR}" ]]; then
+    die "Cannot duplicate script in ${dest_dir}"
+  fi
+
+  if [[ ! -f "${SDIST_BIN_DIR}/$1" ]]; then
+    die "Script $1 doesn't exist"
+  fi
+
+  script_name="$1"
+  src_script="${SDIST_BIN_DIR}/${script_name}"
+  dest_script="${dest_dir}/${script_name}"
+
+  if ! (( explicit_include )); then
+    funcs+=($(perl -lne 'print $1 if /'"${SDIST_INCLUDE_PATTERN}"'/' "${src_script}"))
+    include="$(array_join "," "${funcs[@]}")"
+
+    if [[ -z "${include}" ]]; then
+      die "Please include the functions necessary for ${src_script} to work"
+    fi
+  fi
+
+  build_constants "${src_script}" "${tmp_constants}"
+  build_functions "${src_script}" "${tmp_functions}" "${include}"
+  build_main "${src_script}" "${tmp_main}"
+  cat "${SDIST_TMPFILES[@]:1}" > "${tmp_script}"
+  mv "${tmp_script}" "${dest_script}"
+
+  out "Sharable script located at ${dest_script}"
+}
+
+
+trap finish EXIT
+main "$@"
+
+# vim: set ts=2 sts=2 sw=2 et:

@@ -1,0 +1,17 @@
+#!/bin/bash
+
+SCRIPT="${BASH_SOURCE[0]##/*}"
+UTILS_LIB="${SUITLS_UTILS_LIB:-$HOME/.local/lib/utils.sh}"
+
+# %include out,warn,die
+source "${UTILS_LIB}"
+
+
+main() {
+
+}
+
+
+main "$@"
+
+# vim: set ts=2 sts=2 sw=2 et:

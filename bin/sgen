@@ -1,0 +1,135 @@
+#!/bin/bash
+
+SUTILS_UTILS_DIR="$(cd "$(dirname "$0")"/../lib/sutils &> /dev/null && pwd)"
+readonly SUTILS_UTILS_DIR
+readonly SUTILS_SCRIPT="${0##*/}"
+readonly SUTILS_DEFAULT_TEMPLATE="${SUTILS_UTILS_DIR}/template"
+readonly DEFAULT_BIN_DIR="${SUTILS_BIN_DIR:-${HOME}/.local/bin}"
+readonly DEFAULT_LIB_DIR="${SUTILS_LIB_DIR:-${HOME}/.local/lib}"
+readonly DEFAULT_TEMPLATE="${DEFAULT_LIB_DIR}/template"
+
+source "${SUTILS_UTILS_DIR}/sutils.sh"
+
+
+setup() {
+  out "Running setup..."
+
+  if [[ ! -d "${DEFAULT_BIN_DIR}" ]]; then
+    out "Creating script repository at ${DEFAULT_BIN_DIR}"
+    mkdir -p "${DEFAULT_BIN_DIR}"
+  fi
+
+  if [[ ! -d "${DEFAULT_LIB_DIR}" ]]; then
+    out "Creating library repository at ${DEFAULT_LIB_DIR}"
+    mkdir -p "${DEFAULT_LIB_DIR}"
+  fi
+
+  if [[ ! -f "${DEFAULT_TEMPLATE}" ]]; then
+    out "Creating basic template ${DEFAULT_TEMPLATE}"
+    cp "${SUTILS_DEFAULT_TEMPLATE}" "${DEFAULT_TEMPLATE}"
+  fi
+
+  out "Done with first time setup"
+}
+
+  
+usage() {
+  out
+  out "Usage: ${SUTILS_SCRIPT} [-d DEST_DIR] [-t TEMPLATE] [-h] SCRIPT"
+  out "       ${SUTILS_SCRIPT} -s [SCRIPT]"
+  out
+  out "  -d, --dest-dir   Location where scripts are stored (default is "
+  out "                   \$HOME/.local/bin"
+  out "  -t, --template   Template file to use for script (default is "
+  out "                   \$HOME/.local/lib/template)"
+  out "  -s, --setup      Create directory structure for first time use"
+  out "  -h, --help       Print this message and exit"
+  out
+}
+
+
+main() {
+  local dest_dir
+  local template
+  local script_name
+  local positional=()
+
+  while (( $# > 0 )); do
+    case "$1" in
+      -d|--dest-dir)
+        assert_arg_nonempty "$1" "$2"
+        dest_dir="$2"
+        shift 2
+        ;;
+      -t|--template)
+        assert_arg_nonempty "$1" "$2"
+        template="$2"
+        shift 2
+        ;;
+      -s|--setup)
+        setup
+        shift
+        if [[ -z "$1" ]]; then
+          exit
+        fi
+        ;;
+      -h|--help)
+        usage
+        exit
+        ;;
+      -?*)
+        warn "Unknown option '$1' provided; ignoring"
+        shift
+        ;;
+      *)
+        positional+=("$1")
+        shift
+        ;;
+    esac
+  done
+
+  set -- "${positional[@]}"
+
+  if [[ -z "${dest_dir}" ]]; then
+    dest_dir="${DEFAULT_BIN_DIR}"
+  fi
+
+  if [[ ! -d "${dest_dir}" ]]; then
+    if [[ "${dest_dir}" != "${DEFAULT_BIN_DIR}" ]]; then
+      die "Provided destination directory ${dest_dir} doesn't exist"
+    else
+      setup
+    fi
+  fi
+
+  if [[ -z "${template}" ]]; then
+    template="${DEFAULT_TEMPLATE}"
+  fi
+
+  if [[ ! -f "${template}" ]]; then
+    if [[ "${template}" != "${DEFAULT_TEMPLATE}" ]]; then
+      die "Provided template ${template} doesn't exist"
+    else
+      setup
+    fi
+  fi
+
+  if [[ -z "$1" ]]; then
+    die "No script name provided"
+  fi
+
+  script_name="$1"
+  script="${dest_dir}/${script_name}"
+
+  if [[ -f "${script}" ]]; then
+    die "${script} already exists; please choose another name"
+  fi
+
+  cp "${template}" "${script}"
+  chmod +x "${script}"
+}
+
+
+main "$@"
+
+# vim: set ts=2 sts=2 sw=2 et:

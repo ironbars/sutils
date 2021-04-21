@@ -1,0 +1,15 @@
+script_dir="${SUTILS_BIN_DIR:-$HOME/.local/bin}"
+lib_dir="${SUTILS_LIB_DIR:-$HOME/.local/lib}"
+scripts=()
+libs=()
+
+for script in "${script_dir}"/*; do
+  scripts+=("${script##*/}")
+done
+
+for lib in "${lib_dir}"/*; do
+  libs+=("${lib##*/}")
+done
+
+complete -W "${scripts[*]}" sedit sdist
+complete -W "${libs[*]}" ledit

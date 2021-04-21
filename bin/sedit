@@ -1,0 +1,39 @@
+#!/usr/bin/bash
+
+SUTILS_UTILS_DIR="$(cd "$(dirname "$0")"/../lib/sutils &> /dev/null && pwd)"
+readonly SUTILS_UTILS_DIR
+
+source "${SUTILS_UTILS_DIR}/sutils.sh"
+
+main() {
+  local bin_dir="${SUTILS_BIN_DIR:-$HOME/.local/bin}"
+  local script_name
+  local script
+
+  if [[ ! -d "${bin_dir}" ]]; then
+    warn "It seems that SUTILS_BIN_DIR is undefined, or \$HOME/.local/bin "
+    warn "doesn't exist.  Please create it or point SUTILS_BIN_DIR to a "
+    warn "different location.  You may want to run the following to get "
+    warn "started:"
+    warn "$ sgen --setup"
+    exit 1
+  fi
+
+  if [[ -z "$1" ]]; then
+    die "Please provide the name of a script to edit"
+  fi
+
+  script_name="$1"
+  script="${bin_dir}/${script_name}"
+
+  if [[ ! -x "${script}" ]]; then
+    die "Script ${script} doesn't exist or is not executable"
+  fi
+
+  exec "${EDITOR:-vi}" "${script}"
+}
+
+
+main "$@"
+
+# vim: set ts=2 sts=2 sw=2 et:
