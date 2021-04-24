@@ -11,14 +11,15 @@ build_constants() {
 build_functions() {
   local src="$1"
   local dest="$2"
-  local includestr="$3"
-  local include
+  local include_str="$3"
+  local include_arr
   local include_re
+  local wildcard_re="(^|[[:space:],])[*]($|[[:space:],])"
 
-  if perl -ne '/[ \n\t,]+[*][ \n\t,]+/ or exit 1' <<< "${includestr}"; then
-    include=($(_list_functions))
+  if perl -ne '/'"${wildcard_re}"'/ or exit 1' <<< "${includestr}"; then
+    include_arr=($(_list_functions))
   else
-    IFS=", " read -a include <<< "${includestr}"
+    IFS=", " read -a include_arr <<< "${includestr}"
   fi
 
   include_re="(^$(array_join "|^" "${include[@]}"))"
