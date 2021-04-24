@@ -18,7 +18,7 @@ scripts.
 
 
 %prep
-%global compdir %{_sysconfdir}/bash_completion.d
+%global compdir %{_prefix}/share/bash-completion/completions
 %global pkglibdir %{_prefix}/lib/%{name}
 %setup -q -n %{name}-%{version}-alpha
 
