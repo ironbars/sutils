@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/bash
 
 SUTILS_UTILS_DIR="$(cd "$(dirname "$0")"/../lib/sutils &> /dev/null && pwd)"
 readonly SUTILS_UTILS_DIR
