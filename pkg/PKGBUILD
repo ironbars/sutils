@@ -1,7 +1,7 @@
 # Maintainer: Marc Patton <pattonmj8503@gmail.com>
 
 pkgname="sutils"
-pkgver=0.1.0
+pkgver=0.2.0
 pkgrel=1
 arch=("any")
 pkgdesc="Script writing utilities"
