@@ -18,9 +18,9 @@ package() {
   install -D -m 755 bin/sedit "${pkgdir}/usr/bin/sedit"
   install -D -m 755 bin/sdist "${pkgdir}/usr/bin/sdist"
   install -D -m 755 bin/ledit "${pkgdir}/usr/bin/ledit"
-  install -D -m 644 "lib/${pkgname}/${pkgname}.sh" "${pkgdir}/usr/lib/${pkgname}/${pkgname}.sh"
-  install -D -m 644 "lib/${pkgname}/sdist.sh" "${pkgdir}/usr/lib/${pkgname}/sdist.sh"
-  install -D -m 644 "lib/${pkgname}/template" "${pkgdir}/usr/lib/${pkgname}/template"
+  install -D -m 644 lib/"${pkgname}.sh" "${pkgdir}/usr/lib/${pkgname}/${pkgname}.sh"
+  install -D -m 644 lib/sdist.sh "${pkgdir}/usr/lib/${pkgname}/sdist.sh"
+  install -D -m 644 lib/template "${pkgdir}/usr/lib/${pkgname}/template"
   install -D -m 644 completion.d/sutils "${pkgdir}/usr/share/bash-completion/completions/sutils"
 }
 

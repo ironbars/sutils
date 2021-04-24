@@ -34,9 +34,9 @@ install -m 0755 bin/sgen %{buildroot}/%{_bindir}/sgen
 install -m 0755 bin/sedit %{buildroot}/%{_bindir}/sedit
 install -m 0755 bin/sdist %{buildroot}/%{_bindir}/sdist
 install -m 0755 bin/ledit %{buildroot}/%{_bindir}/ledit
-install -m 0644 lib/%{name}/%{name}.sh %{buildroot}/%{pkglibdir}/%{name}.sh
-install -m 0644 lib/%{name}/sdist.sh %{buildroot}/%{pkglibdir}/sdist.sh
-install -m 0644 lib/%{name}/template %{buildroot}/%{pkglibdir}/template
+install -m 0644 lib/%{name}.sh %{buildroot}/%{pkglibdir}/%{name}.sh
+install -m 0644 lib/sdist.sh %{buildroot}/%{pkglibdir}/sdist.sh
+install -m 0644 lib/template %{buildroot}/%{pkglibdir}/template
 install -m 0644 completion.d/%{name} %{buildroot}/%{compdir}/%{name}
 
 
