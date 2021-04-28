@@ -60,7 +60,7 @@ main() {
   local script_name
   local src_script
   local dest_script
-  local funcs_in=()
+  local funcs=()
   local tmp_script="${SDIST_TMPFILES[0]}"
   local tmp_constants="${SDIST_TMPFILES[1]}"
   local tmp_functions="${SDIST_TMPFILES[2]}"
