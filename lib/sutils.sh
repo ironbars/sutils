@@ -11,7 +11,10 @@ warn() {
 
 
 die() {
-  out "ERROR: $@" >&2
+  if [[ -n "$1" ]]; then
+    out "ERROR: $@" >&2
+  fi
+
   exit 1
 }
 
